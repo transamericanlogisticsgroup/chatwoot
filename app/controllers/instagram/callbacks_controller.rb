@@ -27,7 +27,7 @@ class Instagram::CallbacksController < ApplicationController
 
   def create_channel_with_inbox
     ActiveRecord::Base.transaction do
-      Rails.logger.info("Creating channel with inbox")
+      Rails.logger.info('Creating channel with inbox')
 
       expires_at = Time.current + @long_lived_token_response['expires_in'].seconds
       Rails.logger.info("Expires at: #{expires_at}")
@@ -42,7 +42,7 @@ class Instagram::CallbacksController < ApplicationController
       account.inboxes.create!(
         account: account,
         channel: channel_instagram,
-        name: "Instagram"
+        name: 'Instagram'
       )
     end
   end
