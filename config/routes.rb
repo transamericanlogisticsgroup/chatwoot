@@ -212,6 +212,10 @@ Rails.application.routes.draw do
             resource :authorization, only: [:create]
           end
 
+          namespace :instagram do
+            resource :authorization, only: [:create]
+          end
+
           resources :webhooks, only: [:index, :create, :update, :destroy]
           namespace :integrations do
             resources :apps, only: [:index, :show]
@@ -451,6 +455,7 @@ Rails.application.routes.draw do
 
   get 'microsoft/callback', to: 'microsoft/callbacks#show'
   get 'google/callback', to: 'google/callbacks#show'
+  get 'instagram/callback', to: 'instagram/callbacks#show'
 
   # ----------------------------------------------------------------------
   # Routes for external service verifications

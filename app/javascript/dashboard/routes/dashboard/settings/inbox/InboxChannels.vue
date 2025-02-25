@@ -41,10 +41,10 @@ export default {
 
 <template>
   <div
-    class="flex flex-row overflow-auto p-4 h-full bg-slate-25 dark:bg-slate-800"
+    class="flex flex-row h-full p-4 overflow-auto bg-slate-25 dark:bg-slate-800"
   >
     <woot-wizard
-      class="hidden md:block w-1/4"
+      class="hidden w-1/4 md:block"
       :global-config="globalConfig"
       :items="items"
     />
