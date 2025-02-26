@@ -75,6 +75,33 @@ module InstagramConcern
     JSON.parse(response.body)
   end
 
+  def fetch_instagram_user_details(access_token)
+    response = HTTParty.get(
+      'https://graph.instagram.com/v22.0/me',
+      query: {
+        fields: 'id,username,user_id,name,profile_picture_url,account_type',
+        access_token: access_token
+      },
+      headers: {
+        'Accept' => 'application/json'
+      }
+    )
+
+    Rails.logger.info "Instagram user details raw response: #{response.inspect}"
+
+    unless response.success?
+      Rails.logger.error "Failed to fetch Instagram user details. Status: #{response.code}, Body: #{response.body}"
+      raise "Failed to fetch Instagram user details: #{response.body}"
+    end
+
+    begin
+      JSON.parse(response.body)
+    rescue JSON::ParserError => e
+      Rails.logger.error "Invalid JSON response: #{response.body}"
+      raise e
+    end
+  end
+
   def base_url
     ENV.fetch('FRONTEND_URL', 'http://localhost:3000')
   end

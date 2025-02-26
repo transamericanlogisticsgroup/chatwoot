@@ -32,9 +32,13 @@ class Instagram::CallbacksController < ApplicationController
       expires_at = Time.current + @long_lived_token_response['expires_in'].seconds
       Rails.logger.info("Expires at: #{expires_at}")
 
+      # Get Instagram user details
+      user_details = fetch_instagram_user_details(@long_lived_token_response['access_token'])
+      Rails.logger.info("Instagram user details: #{user_details.inspect}")
+
       channel_instagram = Channel::Instagram.create!(
         access_token: @long_lived_token_response['access_token'],
-        instagram_id: @response.params['user_id'].to_s,
+        instagram_id: user_details['user_id'].to_s,
         account: account,
         expires_at: expires_at
       )
@@ -42,7 +46,7 @@ class Instagram::CallbacksController < ApplicationController
       account.inboxes.create!(
         account: account,
         channel: channel_instagram,
-        name: 'Instagram'
+        name: user_details['username']
       )
     end
   end
