@@ -15,8 +15,8 @@ class Instagram::CallbacksController < ApplicationController
     @long_lived_token_response = exchange_for_long_lived_token(@response.token)
     Rails.logger.info("Long-lived token response: #{@long_lived_token_response}")
 
-    create_channel_with_inbox
-    redirect_to '/'
+    inbox, already_exists = create_channel_with_inbox
+    redirect_to app_instagram_inbox_agents_url(account_id: account_id, inbox_id: inbox.id)
   rescue StandardError => e
     Rails.logger.error("Instagram Channel creation Error: #{e.message}")
     ChatwootExceptionTracker.new(e).capture_exception
@@ -55,11 +55,8 @@ class Instagram::CallbacksController < ApplicationController
     instagram_client
   end
 
-  def long_lived_token_response
-    @long_lived_token_response ||= exchange_for_long_lived_token(oauth_code)
-  end
-
   def account_id
+    # TODO: Get the account id from the user details via cache
     1
   end
 

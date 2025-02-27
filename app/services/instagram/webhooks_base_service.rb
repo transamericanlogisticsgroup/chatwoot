@@ -2,7 +2,7 @@ class Instagram::WebhooksBaseService
   private
 
   def inbox_channel(instagram_id)
-    messenger_channel = Channel::FacebookPage.where(instagram_id: instagram_id)
+    messenger_channel = Channel::Instagram.where(instagram_id: instagram_id)
     @inbox = ::Inbox.find_by(channel: messenger_channel)
   end
 

@@ -33,7 +33,7 @@ module InstagramConcern
         grant_type: 'ig_exchange_token',
         client_secret: ENV.fetch('IG_APP_SECRET'),
         access_token: short_lived_token,
-        client_id: ENV.fetch('IG_APP_ID')  # Added client_id
+        client_id: ENV.fetch('IG_APP_ID')
       },
       headers: {
         'Accept' => 'application/json'
