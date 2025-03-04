@@ -6,13 +6,15 @@ class SendReplyJob < ApplicationJob
     conversation = message.conversation
     channel_name = conversation.inbox.channel.class.to_s
 
+    Rails.logger.info("Sending message to channel_name #{channel_name}")
     services = {
       'Channel::TwitterProfile' => ::Twitter::SendOnTwitterService,
       'Channel::TwilioSms' => ::Twilio::SendOnTwilioService,
       'Channel::Line' => ::Line::SendOnLineService,
       'Channel::Telegram' => ::Telegram::SendOnTelegramService,
       'Channel::Whatsapp' => ::Whatsapp::SendOnWhatsappService,
-      'Channel::Sms' => ::Sms::SendOnSmsService
+      'Channel::Sms' => ::Sms::SendOnSmsService,
+      'Channel::Instagram' => ::Instagram::SendOnIgService
     }
 
     case channel_name

@@ -14,6 +14,7 @@ class Instagram::SendOnInstagramService < Base::SendOnChannelService
   end
 
   def perform_reply
+    Rails.logger.info("Sending message to Instagram: #{message.inspect}")
     if message.attachments.present?
       message.attachments.each do |attachment|
         send_to_facebook_page attachment_message_params(attachment)

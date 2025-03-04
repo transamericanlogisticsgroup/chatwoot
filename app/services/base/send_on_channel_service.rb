@@ -50,6 +50,7 @@ class Base::SendOnChannelService
   end
 
   def validate_target_channel
+    Rails.logger.info("Validating target channel: #{inbox.channel.class}, #{channel_class}")
     raise 'Invalid channel service was called' if inbox.channel.class != channel_class
   end
 end
