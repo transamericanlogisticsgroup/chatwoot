@@ -8,9 +8,6 @@ module InstagramConcern
 
     Rails.logger.info "Instagram OAuth Setup - Client ID: #{client_id.present? ? 'Present' : 'Missing'}"
 
-    raise 'Instagram App ID is not configured' if client_id.nil?
-    raise 'Instagram App Secret is not configured' if client_secret.nil?
-
     ::OAuth2::Client.new(
       client_id,
       client_secret,

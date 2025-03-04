@@ -11,7 +11,6 @@ class Instagram::CallbacksController < ApplicationController
     )
     Rails.logger.info("Initial token response: #{@response.inspect}")
 
-    # Exchange for long-lived token
     @long_lived_token_response = exchange_for_long_lived_token(@response.token)
     Rails.logger.info("Long-lived token response: #{@long_lived_token_response}")
 
