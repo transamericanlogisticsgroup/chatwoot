@@ -1,4 +1,4 @@
-class Instagram::MessageText < Instagram::WebhooksBaseService
+class Instagram::Direct::MessageText < Instagram::WebhooksBaseService
   include HTTParty
 
   attr_reader :messaging
@@ -43,7 +43,11 @@ class Instagram::MessageText < Instagram::WebhooksBaseService
   # rubocop:disable Metrics/AbcSize
   def ensure_contact(ig_scope_id)
     begin
-      k = Koala::Facebook::API.new(@inbox.channel.page_access_token) if @inbox.facebook?
+      Koala.config.graph_server = 'graph.instagram.com'
+      Rails.logger.info("Graph server: #{Koala.config.graph_server}")
+      Rails.logger.info("Access token: #{@inbox.channel.access_token}")
+      Rails.logger.info("Instagram ID: #{ig_scope_id}")
+      k = Koala::Facebook::API.new(@inbox.channel.access_token)
       result = k.get_object(ig_scope_id) || {}
     rescue Koala::Facebook::AuthenticationError => e
       @inbox.channel.authorization_error!
