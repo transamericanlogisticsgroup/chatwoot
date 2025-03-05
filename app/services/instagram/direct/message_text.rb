@@ -3,7 +3,7 @@ class Instagram::Direct::MessageText < Instagram::WebhooksBaseService
 
   attr_reader :messaging
 
-  base_uri 'https://graph.facebook.com/v11.0/'
+  base_uri 'https://graph.instagram.com/v22.0/'
 
   def initialize(messaging, channel)
     super(channel)
@@ -44,10 +44,10 @@ class Instagram::Direct::MessageText < Instagram::WebhooksBaseService
   def ensure_contact(ig_scope_id)
     begin
       fields = 'name,username,profile_pic'
-      url = "https://graph.instagram.com/v22.0/#{ig_scope_id}?fields=#{fields}&access_token=#{@inbox.channel.access_token}"
+      url = "#{base_uri}#{ig_scope_id}?fields=#{fields}&access_token=#{@inbox.channel.access_token}"
       Rails.logger.info("Instagram ID: #{ig_scope_id}")
       response = HTTParty.get(url)
-      
+
       if response.success?
         result = JSON.parse(response.body).with_indifferent_access
         # Ensure all fields are present and in the same format
@@ -87,10 +87,6 @@ class Instagram::Direct::MessageText < Instagram::WebhooksBaseService
   def contacts_first_message?(ig_scope_id)
     @contact_inbox = @inbox.contact_inboxes.where(source_id: ig_scope_id).last
     @contact_inbox.blank? && @inbox.channel.instagram_id.present?
-  end
-
-  def sent_via_test_webhook?
-    @messaging[:sender][:id] == '12334' && @messaging[:recipient][:id] == '23245'
   end
 
   def un_send_message
