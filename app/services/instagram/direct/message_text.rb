@@ -43,19 +43,31 @@ class Instagram::Direct::MessageText < Instagram::WebhooksBaseService
   # rubocop:disable Metrics/AbcSize
   def ensure_contact(ig_scope_id)
     begin
-      Koala.config.graph_server = 'graph.instagram.com'
-      Rails.logger.info("Graph server: #{Koala.config.graph_server}")
-      Rails.logger.info("Access token: #{@inbox.channel.access_token}")
+      fields = 'name,username,profile_pic'
+      url = "https://graph.instagram.com/v22.0/#{ig_scope_id}?fields=#{fields}&access_token=#{@inbox.channel.access_token}"
       Rails.logger.info("Instagram ID: #{ig_scope_id}")
-      k = Koala::Facebook::API.new(@inbox.channel.access_token)
-      result = k.get_object(ig_scope_id) || {}
-    rescue Koala::Facebook::AuthenticationError => e
-      @inbox.channel.authorization_error!
+      response = HTTParty.get(url)
+      
+      if response.success?
+        result = JSON.parse(response.body).with_indifferent_access
+        # Ensure all fields are present and in the same format
+        result = {
+          'name' => result['name'],
+          'username' => result['username'],
+          'profile_pic' => result['profile_pic'],
+          'id' => result['id']
+        }.with_indifferent_access
+      else
+        Rails.logger.error("Instagram API Error: #{response.code} - #{response.body}")
+        result = {}
+      end
+    rescue HTTParty::Error => e
+      @inbox.channel.authorization_error! if e.response&.code == 401
       Rails.logger.warn("Authorization error for account #{@inbox.account_id} for inbox #{@inbox.id}")
       ChatwootExceptionTracker.new(e, account: @inbox.account).capture_exception
-    rescue StandardError, Koala::Facebook::ClientError => e
-      Rails.logger.warn("[FacebookUserFetchClientError]: account_id #{@inbox.account_id} inbox_id #{@inbox.id}")
-      Rails.logger.warn("[FacebookUserFetchClientError]: #{e.message}")
+    rescue StandardError => e
+      Rails.logger.warn("[InstagramUserFetchError]: account_id #{@inbox.account_id} inbox_id #{@inbox.id}")
+      Rails.logger.warn("[InstagramUserFetchError]: #{e.message}")
       ChatwootExceptionTracker.new(e, account: @inbox.account).capture_exception
     end
 
