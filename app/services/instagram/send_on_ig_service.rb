@@ -15,11 +15,11 @@ class Instagram::SendOnIgService < Base::SendOnChannelService
     Rails.logger.info("Sending message to Instagram: #{message.inspect}")
     if message.attachments.present?
       message.attachments.each do |attachment|
-        send_to_facebook_page attachment_message_params(attachment)
+        send_to_instagram attachment_message_params(attachment)
       end
     end
 
-    send_to_facebook_page message_params if message.content.present?
+    send_to_instagram message_params if message.content.present?
   rescue StandardError => e
     ChatwootExceptionTracker.new(e, account: message.account, user: message.sender).capture_exception
     # TODO : handle specific errors or else page will get disconnected
@@ -55,7 +55,7 @@ class Instagram::SendOnIgService < Base::SendOnChannelService
 
   # Deliver a message with the given payload.
   # @see https://developers.facebook.com/docs/messenger-platform/instagram/features/send-message
-  def send_to_facebook_page(message_content)
+  def send_to_instagram(message_content)
     access_token = channel.access_token
 
     app_secret_proof = calculate_app_secret_proof(ENV.fetch('IG_APP_SECRET', nil), access_token)
