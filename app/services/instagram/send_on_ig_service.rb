@@ -80,8 +80,9 @@ class Instagram::SendOnIgService < Base::SendOnChannelService
     end
 
     Rails.logger.info("Instagram response: #{response.inspect}")
+    Rails.logger.info("message_id #{response['message_id']}")
 
-    message.source_id = response['recipient_id'] if response['recipient_id'].present?
+    message.source_id = response['message_id'] if response['message_id'].present?
     message.save!
 
     response

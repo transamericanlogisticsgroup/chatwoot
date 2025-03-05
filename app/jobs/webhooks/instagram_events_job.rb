@@ -27,6 +27,7 @@ class Webhooks::InstagramEventsJob < MutexApplicationJob
       next if @channel.blank?
 
       messages(entry).each do |messaging|
+        Rails.logger.info("Instagram Events Job: messaging: #{messaging}")
         send(@event_name, messaging) if event_name(messaging)
       end
     end
