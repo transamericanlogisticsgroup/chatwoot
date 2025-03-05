@@ -2,10 +2,6 @@ class Webhooks::InstagramEventsJob < MutexApplicationJob
   queue_as :default
   retry_on LockAcquisitionError, wait: 1.second, attempts: 8
 
-  include HTTParty
-
-  base_uri 'https://graph.facebook.com/v11.0/me'
-
   # @return [Array] We will support further events like reaction or seen in future
   SUPPORTED_EVENTS = [:message, :read].freeze
 
@@ -60,9 +56,6 @@ class Webhooks::InstagramEventsJob < MutexApplicationJob
   end
 
   def message(messaging)
-    Rails.logger.info("messaging: #{messaging}")
-    Rails.logger.info("channel: #{@channel}")
-    Rails.logger.info("channel.is_a?(Channel::Instagram): #{@channel.is_a?(Channel::Instagram)}")
     if @channel.is_a?(Channel::Instagram)
       ::Instagram::Direct::MessageText.new(messaging, @channel).perform
     else
@@ -82,3 +75,26 @@ class Webhooks::InstagramEventsJob < MutexApplicationJob
     (entry[:messaging].presence || entry[:standby] || [])
   end
 end
+
+# Sample response
+# [
+#   {
+#     "time": <timestamp>,
+#     "id": <CONNECT_CHANNEL_INSTAGRAM_USER_ID>, // Connect channel Instagram User ID
+#     "messaging": [
+#       {
+#         "sender": {
+#           "id": <INSTAGRAM_USER_ID>
+#         },
+#         "recipient": {
+#           "id": <CONNECT_CHANNEL_INSTAGRAM_USER_ID>
+#         },
+#         "timestamp": <timestamp>,
+#         "message": {
+#           "mid": <MESSAGE_ID>,
+#           "text": <MESSAGE_TEXT>
+#         }
+#       }
+#     ]
+#   }
+# ]

@@ -11,21 +11,21 @@ class Instagram::Direct::MessageText < Instagram::WebhooksBaseService
   end
 
   def perform
-    create_test_text
     instagram_id, contact_id = instagram_and_contact_ids
     inbox_channel(instagram_id)
-    # person can connect the channel and then delete the inbox
+
     return if @inbox.blank?
 
-    # This channel might require reauthorization, may be owner might have changed the fb password
     if @inbox.channel.reauthorization_required?
       Rails.logger.info("Skipping message processing as reauthorization is required for inbox #{@inbox.id}")
       return
     end
 
-    return unsend_message if message_is_deleted?
+    return un_send_message if message_is_deleted?
 
     ensure_contact(contact_id) if contacts_first_message?(contact_id)
+
+    Rails.logger.info("Instagram Direct Message Text: #{@messaging}")
 
     create_message
   end
@@ -81,7 +81,7 @@ class Instagram::Direct::MessageText < Instagram::WebhooksBaseService
     @messaging[:sender][:id] == '12334' && @messaging[:recipient][:id] == '23245'
   end
 
-  def unsend_message
+  def un_send_message
     message_to_delete = @inbox.messages.find_by(
       source_id: @messaging[:message][:mid]
     )
@@ -95,66 +95,5 @@ class Instagram::Direct::MessageText < Instagram::WebhooksBaseService
     return unless @contact_inbox
 
     Messages::Instagram::MessageBuilder.new(@messaging, @inbox, outgoing_echo: agent_message_via_echo?).perform
-  end
-
-  def create_test_text
-    return unless sent_via_test_webhook?
-
-    Rails.logger.info('Probably Test data.')
-
-    messenger_channel = Channel::FacebookPage.last
-    @inbox = ::Inbox.find_by(channel: messenger_channel)
-    return unless @inbox
-
-    @contact = create_test_contact
-
-    @conversation ||= create_test_conversation(conversation_params)
-
-    @message = @conversation.messages.create!(test_message_params)
-  end
-
-  def create_test_contact
-    @contact_inbox = @inbox.contact_inboxes.where(source_id: @messaging[:sender][:id]).first
-    unless @contact_inbox
-      @contact_inbox ||= @inbox.channel.create_contact_inbox(
-        'sender_username', 'sender_username'
-      )
-    end
-
-    @contact_inbox.contact
-  end
-
-  def create_test_conversation(conversation_params)
-    Conversation.find_by(conversation_params) || build_conversation(conversation_params)
-  end
-
-  def test_message_params
-    {
-      account_id: @conversation.account_id,
-      inbox_id: @conversation.inbox_id,
-      message_type: 'incoming',
-      source_id: @messaging[:message][:mid],
-      content: @messaging[:message][:text],
-      sender: @contact
-    }
-  end
-
-  def build_conversation(conversation_params)
-    Conversation.create!(
-      conversation_params.merge(
-        contact_inbox_id: @contact_inbox.id
-      )
-    )
-  end
-
-  def conversation_params
-    {
-      account_id: @inbox.account_id,
-      inbox_id: @inbox.id,
-      contact_id: @contact.id,
-      additional_attributes: {
-        type: 'instagram_direct_message'
-      }
-    }
   end
 end
