@@ -3,8 +3,6 @@ class Instagram::SendOnIgService < Base::SendOnChannelService
 
   pattr_initialize [:message!]
 
-  base_uri 'https://graph.facebook.com/v11.0/me'
-
   private
 
   delegate :additional_attributes, to: :contact
@@ -59,19 +57,33 @@ class Instagram::SendOnIgService < Base::SendOnChannelService
   # @see https://developers.facebook.com/docs/messenger-platform/instagram/features/send-message
   def send_to_facebook_page(message_content)
     access_token = channel.access_token
-    app_secret_proof = calculate_app_secret_proof(GlobalConfigService.load('FB_APP_SECRET', ''), access_token)
+
+    app_secret_proof = calculate_app_secret_proof(ENV.fetch('IG_APP_SECRET', nil), access_token)
     query = { access_token: access_token }
     query[:appsecret_proof] = app_secret_proof if app_secret_proof
 
-    # url = "https://graph.facebook.com/v11.0/me/messages?access_token=#{access_token}"
-
     instagram_id = channel.instagram_id.presence || 'me'
 
+    Rails.logger.info("instagram_id #{instagram_id}")
+
+    Rails.logger.info("message_content #{message_content}")
+    # Both approaches are working fine. Please use the best approach.
+    # response = HTTParty.post(
+    #   "https://graph.instagram.com/v22.0/#{instagram_id}/messages",
+    #   body: message_content,
+    #   query: query
+    # )
     response = HTTParty.post(
       "https://graph.instagram.com/v22.0/#{instagram_id}/messages",
       body: message_content,
+      headers: {
+        'Authorization': "Bearer #{access_token}",
+        'Content-Type': 'application/json'
+      },
       query: query
     )
+
+    Rails.logger.info("I.G:response #{response}")
 
     if response[:error].present?
       Rails.logger.error("Instagram response: #{response['error']} : #{message_content}")
