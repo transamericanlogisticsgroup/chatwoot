@@ -44,8 +44,9 @@ class Instagram::Direct::MessageText < Instagram::WebhooksBaseService
   def ensure_contact(ig_scope_id)
     begin
       fields = 'name,username,profile_pic'
-      url = "#{base_uri}#{ig_scope_id}?fields=#{fields}&access_token=#{@inbox.channel.access_token}"
+      url = "https://graph.instagram.com/v22.0/#{ig_scope_id}?fields=#{fields}&access_token=#{@inbox.channel.access_token}"
       Rails.logger.info("Instagram ID: #{ig_scope_id}")
+      Rails.logger.info("URL: #{url}")
       response = HTTParty.get(url)
 
       if response.success?
@@ -100,6 +101,9 @@ class Instagram::Direct::MessageText < Instagram::WebhooksBaseService
   end
 
   def create_message
+    Rails.logger.info("Contact Inbox: #{@contact_inbox}")
+    Rails.logger.info("Inbox: #{@inbox}")
+    Rails.logger.info("Agent Message via Echo: #{agent_message_via_echo?}")
     return unless @contact_inbox
 
     Messages::Instagram::MessageBuilder.new(@messaging, @inbox, outgoing_echo: agent_message_via_echo?).perform

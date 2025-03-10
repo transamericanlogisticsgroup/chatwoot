@@ -3,8 +3,8 @@ module InstagramConcern
   include HTTParty
 
   def instagram_client
-    client_id = ENV.fetch('IG_APP_ID', nil)
-    client_secret = ENV.fetch('IG_APP_SECRET', nil)
+    client_id = ENV.fetch('INSTAGRAM_APP_ID', nil)
+    client_secret = ENV.fetch('INSTAGRAM_APP_SECRET', nil)
 
     Rails.logger.info "Instagram OAuth Setup - Client ID: #{client_id.present? ? 'Present' : 'Missing'}"
 
@@ -28,9 +28,9 @@ module InstagramConcern
       'https://graph.instagram.com/access_token',
       query: {
         grant_type: 'ig_exchange_token',
-        client_secret: ENV.fetch('IG_APP_SECRET'),
+        client_secret: ENV.fetch('INSTAGRAM_APP_SECRET'),
         access_token: short_lived_token,
-        client_id: ENV.fetch('IG_APP_ID')
+        client_id: ENV.fetch('INSTAGRAM_APP_ID')
       },
       headers: {
         'Accept' => 'application/json'

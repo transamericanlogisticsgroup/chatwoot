@@ -21,6 +21,7 @@ class Instagram::SendOnIgService < Base::SendOnChannelService
 
     send_to_instagram message_params if message.content.present?
   rescue StandardError => e
+    Rails.logger.info("Instagram Error: #{e.inspect}")
     ChatwootExceptionTracker.new(e, account: message.account, user: message.sender).capture_exception
     # TODO : handle specific errors or else page will get disconnected
     # channel.authorization_error!
@@ -58,7 +59,7 @@ class Instagram::SendOnIgService < Base::SendOnChannelService
   def send_to_instagram(message_content)
     access_token = channel.access_token
 
-    app_secret_proof = calculate_app_secret_proof(ENV.fetch('IG_APP_SECRET', nil), access_token)
+    app_secret_proof = calculate_app_secret_proof(ENV.fetch('INSTAGRAM_APP_SECRET', nil), access_token)
     query = { access_token: access_token }
     query[:appsecret_proof] = app_secret_proof if app_secret_proof
 
